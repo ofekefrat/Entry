@@ -1,4 +1,4 @@
-from serial_module import *
+from serial_module import Item
 from tkcalendar import DateEntry
 from customtkinter import *
 import customtkinter as ctk
@@ -6,19 +6,22 @@ import customtkinter as ctk
 item = None
 
 def submit_serial(input,
-                #   frameBuffer: CTkFrame,
-                #   modelBuffer: CTkLabel,
-                #   newModelFrame: CTkFrame,
-                #   existingModelFrame: CTkFrame,
-                #   prev_name: CTkLabel,
-                #   prev_id: CTkLabel
-                ):
+                  formFrame: CTkFrame,
+                  newModelFrame: CTkFrame,
+                  existingModelFrame: CTkFrame,
+                  existingModelName: CTkLabel,
+                  prevName: CTkLabel,
+                  prevNameLabel: CTkLabel):
     global item
     item = None
 
     msg_label.grid_forget()
-    existingModel_frame.grid_forget()
-    newModel_frame.grid_forget()
+    existingModelFrame.grid_forget()
+    newModelFrame.grid_forget()
+    prevName.grid_forget()
+    prevNameLabel.grid_forget()
+    formFrame.grid_forget()
+
 
     tempItem = Item(input)
 
@@ -33,18 +36,14 @@ def submit_serial(input,
     form_frame.grid(row=2, column=1, pady=5)
 
     if tempItem.new:
-        newModel_frame.grid(row=3, column=1, pady=5)
+        newModelFrame.grid(row=3, column=1, pady=5)
     else:
-        existingModel_frame.grid(row=3, column=1, pady=5) 
-        existingModel_Name.configure(text=tempItem.modelName)
+        existingModelFrame.grid(row=3, column=1, pady=5) 
+        existingModelName.configure(text=tempItem.modelName)
 
-        prev_name_label.grid(row=0, column=1, pady=5, padx=(0, 20))
-        prev_name.grid(row=0, column=0, padx=10, pady=5)
-        prev_name.configure(text=tempItem.prevName)
-
-        prev_id_label.grid(row=1, column=1, pady=5, padx=(0, 20))
-        prev_id.grid(row=1, column=0, padx=10, pady=5)
-        prev_id.configure(text=tempItem.prevId)
+        prevNameLabel.grid(row=0, column=1, pady=5, padx=(0, 20))
+        prevName.grid(row=0, column=0, padx=10, pady=5)
+        prevName.configure(text=tempItem.prevName)
 
     info_submit.grid(row=4, column=1, pady=5)
     item = tempItem
@@ -106,13 +105,13 @@ serial_sumbit = CTkButton(main_frame,
     width = 10,
     font = globalFont,
     bg_color = background,
-    command = lambda: submit_serial(serial_input.get())
-                                    # form_frame,
-                                    # existingModel_Name,
-                                    # newModel_frame,
-                                    # existingModel_frame,
-                                    # prev_name,
-                                    # prev_id)
+    command = lambda: submit_serial(serial_input.get(),
+                                    form_frame,
+                                    newModel_frame,
+                                    existingModel_frame,
+                                    existingModel_Name,
+                                    prev_name,
+                                    prev_name_label)
 )
 serial_sumbit.grid(row=1, column=0, pady=5)
 
@@ -150,15 +149,6 @@ id_label.grid(row=1, column=3, pady=5)
 
 id_input = CTkEntry(form_frame, bg_color=background)
 id_input.grid(row=1, column=2, padx=10, pady=5)
-
-#previous id
-prev_id_label = CTkLabel(form_frame,
-    text=":מס' זהות קודם",
-    font=globalFont, 
-    bg_color=background
-)
-
-prev_id = CTkLabel(form_frame, bg_color=background)
 
 #date
 date_label = CTkLabel(form_frame,

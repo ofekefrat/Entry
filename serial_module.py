@@ -1,9 +1,8 @@
-import os.path
-from openpyxl import Workbook, load_workbook
-from openpyxl.worksheet.worksheet import Worksheet
+from openpyxl import load_workbook
 
+#TODO on createPath, findSheet, findRow: work with every type of serial
+#TODO fix fetchPrevName
 #TODO everything in getcolumn
-#TODO add the option to set items as "returned"
     # TEST: make sure there's no additional cells after the first empty cell found!
     # TEST: serial number validation (insufficient digits, incorrect format...)
 
@@ -18,7 +17,6 @@ class Item:
         self.modelName = None
         self.new = None
         self.prevName = None
-        self.prevId = None
 
         self.findWorkbook()
         if not isinstance(self.wb, FileNotFoundError):
@@ -30,16 +28,13 @@ class Item:
                     self.modelName = None
                     self.column = 2
                 else:
-                    self.findModelName()
+                    self.fetchModel()
                     self.findColumn()
-                    self.findPrevInfo()
+                    self.fetchPrevName()
     
 
     def createPath(self):
-        targetWorkbook = self.serial[0:-3] + "000.xlsx"
-        # path = "C:\\Users\\Rachel\\Desktop\\code\\lets\\SerialExcel\\"
-        path = "C:\\Users\\ofeke\\vscode projects\\SerialExcel\\"
-        self.path = path + targetWorkbook
+        self.path = "serial " + self.serial[0:-3] + "000.xlsx"
         
 
     def findWorkbook(self):
@@ -93,7 +88,7 @@ class Item:
         self.column = column
 
 
-    def findModelName(self):
+    def fetchModel(self):
         models = ["caneo", "domiflex", "exigo", "emineo", "cirrus", "marcus", "f3", "m1", "k300", "pt", "מדרגון", "eloflex", "adiflex"]
 
         modelName = None
@@ -117,20 +112,14 @@ class Item:
         self.modelName = modelName
         
 
-    def findPrevInfo(self):
+    def fetchPrevName(self):
         currentColumn = self.column
-        for i in range(3, 5): # -1 is "returned", -2 is date
-            value = self.sheet.cell(self.row, currentColumn-i).value
-            if type(value) is int or value.isnumeric():
-                self.prevId = value
+        for i in range(4, 8):
+            cellVal = self.sheet.cell(self.row, currentColumn-i).value
+            if type(cellVal) is str and ("הוחזר" in cellVal or self.serial in cellVal):
+                self.prevName = self.sheet.cell(self.row, currentColumn-i+1).value
                 continue
-        
-        for j in range(0, 2):
-            value = self.sheet.cell(self.row, currentColumn-i-j).value
-            if type(value) is str and value.isalpha(): # and " " in value:
-                self.prevName = value
-                continue
-
+                
 
     def find_next_empty_cell(self):
         currentColumn=2
@@ -149,8 +138,6 @@ class Item:
             else:
                 return False
 
-
-        
 
 # def find_serial(serial):
 #     item = Item(serial)
