@@ -86,7 +86,7 @@ ctk.set_appearance_mode("light")
 #window
 background = "#EAEAEA"
 window = CTk()
-window.title("Injector")
+window.title("Entry")
 window.geometry("600x600")
 generalFont = CTkFont("arial", 15)
 btnFont = CTkFont("arial", 17)

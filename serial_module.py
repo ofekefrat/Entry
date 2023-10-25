@@ -1,7 +1,6 @@
 from openpyxl import load_workbook
 
 #TODO add exceptions for each action, in case it fails
-    #TODO add "no model name" error
 #TODO put a flag in the end of the row to signify editing in progress
 #TODO check if there's a flag and throw error if so
     # TEST: "returned" feature
@@ -12,7 +11,7 @@ from openpyxl import load_workbook
 
 class Item:
     def __init__(self, serial: str):
-        self.serial = serial
+        self.serial = serial.strip()
         self.path = None
         self.wb = None
         self.sheet = None
@@ -40,7 +39,8 @@ class Item:
     
 
     def createPath(self):
-        self.path = "serial " + self.serial[0:-3] + "000.xlsx"
+        path = ""
+        self.path = path + self.serial[0:-3] + "000.xlsx"
         
 
     def findWorkbook(self):
@@ -94,7 +94,7 @@ class Item:
     def fetchModel(self):
         models = ["caneo", "domiflex", "exigo", "emineo", "cirrus", "marcus", "f3", "m1", "k300", "pt", "מדרגון", "eloflex", "adiflex"]
 
-        modelName = -1
+        modelName = None
         currentColumn=5
         cellVal1 = self.sheet.cell(row=self.row, column=currentColumn-1).value
         cellVal2 = self.sheet.cell(row=self.row, column=currentColumn).value
@@ -110,7 +110,7 @@ class Item:
                     modelName = cellVal2
                     continue
         if modelName is None:
-            self.modelName = -1           
+            self.modelName = "לא נמצא"
         else:
             self.modelName = modelName
         
