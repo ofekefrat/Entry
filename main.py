@@ -12,6 +12,7 @@ def submit_serial(input,
                   existingModelName: CTkLabel,
                   prevName: CTkLabel,
                   prevNameLabel: CTkLabel,
+                  deviceBirthdayDate: CTkLabel,
                   infoSubmitBtn: CTkButton,
                   deviceReturnFrame: CTkFrame,
                   deviceReturnName: CTkLabel
@@ -44,6 +45,7 @@ def submit_serial(input,
     else:
         existingModelFrame.grid(row=3, column=1, pady=5) 
         existingModelName.configure(text=tempItem.modelName)
+        deviceBirthdayDate.configure(text = tempItem.deviceBirthday)
 
         if tempItem.returned:
             prevNameLabel.grid(row=0, column=1, pady=5, padx=(0, 20))
@@ -129,6 +131,7 @@ serial_sumbit_btn = CTkButton(main_frame,
                                     existingModel_Name,
                                     prev_name,
                                     prev_name_label,
+                                    deviceBirthday_date,
                                     info_submit_btn,
                                     deviceReturn_frame,
                                     deviceReturn_name)
@@ -205,6 +208,13 @@ existingModel_label.grid(row=0, column=1)
 
 existingModel_Name = CTkLabel(existingModel_frame, bg_color=background, font=infoFont)
 existingModel_Name.grid(row=0, column=0, padx=10)
+
+deviceBirthday_label = CTkLabel(existingModel_frame, bg_color=background, font=generalFont,
+                                text = ":תאריך הנפקת מוצר")
+deviceBirthday_label.grid(row=1, column=1, padx=10)
+
+deviceBirthday_date = CTkLabel(existingModel_frame, bg_color=background, font=infoFont)
+deviceBirthday_date.grid(row=1, column=0, padx=10)
 
 info_submit_btn = CTkButton(main_frame, bg_color=background,
     text = "הוסף מידע",

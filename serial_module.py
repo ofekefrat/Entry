@@ -1,5 +1,5 @@
 from openpyxl import load_workbook
-
+from datetime import datetime
 #TODO add exceptions for each action, in case it fails
 #TODO put a flag in the end of the row to signify editing in progress
 #TODO check if there's a flag and throw error if so
@@ -18,6 +18,7 @@ class Item:
         self.row = None
         self.column = None
         self.modelName = None
+        self.deviceBirthday = None
         self.new = None
         self.prevName = None
         self.returned = None
@@ -32,14 +33,14 @@ class Item:
                     self.modelName = None
                     self.column = 2
                 else:
-                    self.fetchModel()
+                    self.fetchDeviceInfo()
                     self.findColumn()
                     self.fetchPrevName()
                     self.assertIsReturned()
     
 
     def createPath(self):
-        path = ""
+        path = "serial "
         self.path = path + self.serial[0:-3] + "000.xlsx"
         
 
@@ -91,7 +92,7 @@ class Item:
         self.returned = (cellVal == "הוחזר".strip())
         
 
-    def fetchModel(self):
+    def fetchDeviceInfo(self):
         models = ["caneo", "domiflex", "exigo", "emineo", "cirrus", "marcus", "f3", "m1", "k300", "pt", "מדרגון", "eloflex", "adiflex"]
 
         modelName = None
@@ -103,16 +104,22 @@ class Item:
             for x in models:
                 if x in cellVal1.lower():
                     modelName = cellVal1
+                    deviceBirthday = cellVal2
                     continue
         if modelName is None and type(cellVal2) is str:
             for x in cellVal2.lower():
                 if x in cellVal2.lower():
                     modelName = cellVal2
+                    deviceBirthday = self.sheet.cell(row=self.row, column=currentColumn+1).value
                     continue
         if modelName is None:
             self.modelName = "לא נמצא"
         else:
             self.modelName = modelName
+
+        self.deviceBirthday = deviceBirthday
+        if isinstance(deviceBirthday, datetime):
+            self.deviceBirthday = deviceBirthday.strftime("%d/%m/%y")
         
 
     def fetchPrevName(self):
