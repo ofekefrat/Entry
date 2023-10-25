@@ -11,7 +11,11 @@ def submit_serial(input,
                   existingModelFrame: CTkFrame,
                   existingModelName: CTkLabel,
                   prevName: CTkLabel,
-                  prevNameLabel: CTkLabel):
+                  prevNameLabel: CTkLabel,
+                  infoSubmitBtn: CTkButton,
+                  deviceReturnFrame: CTkFrame,
+                  deviceReturnName: CTkLabel
+                  ):
     global item
     item = None
 
@@ -21,6 +25,8 @@ def submit_serial(input,
     prevName.grid_forget()
     prevNameLabel.grid_forget()
     formFrame.grid_forget()
+    infoSubmitBtn.grid_forget()
+    deviceReturnFrame.grid_forget()
 
 
     tempItem = Item(input)
@@ -29,11 +35,9 @@ def submit_serial(input,
         show_msg("מספר סריאלי לא קיים", error=True)
         return
     
-    if tempItem.column == -1:
-        show_msg("המוצר לא הוחזר", error=True)
-        return
-    
-    form_frame.grid(row=2, column=1, pady=5)
+    if tempItem.returned or tempItem.new:
+        form_frame.grid(row=2, column=1, pady=5)
+        infoSubmitBtn.grid(row=4, column=1, pady=5)
 
     if tempItem.new:
         newModelFrame.grid(row=3, column=1, pady=5)
@@ -41,20 +45,30 @@ def submit_serial(input,
         existingModelFrame.grid(row=3, column=1, pady=5) 
         existingModelName.configure(text=tempItem.modelName)
 
-        prevNameLabel.grid(row=0, column=1, pady=5, padx=(0, 20))
-        prevName.grid(row=0, column=0, padx=10, pady=5)
-        prevName.configure(text=tempItem.prevName)
+        if tempItem.returned:
+            prevNameLabel.grid(row=0, column=1, pady=5, padx=(0, 20))
+            prevName.grid(row=0, column=0, padx=10, pady=5)
+            prevName.configure(text=tempItem.prevName)
+        else:
+            deviceReturnFrame.grid(row=4, column=1, pady=5)
+            deviceReturnName.configure(text = tempItem.prevName)
 
-    info_submit.grid(row=4, column=1, pady=5)
     item = tempItem
 
 
 def submit_info(name, id, date, modelEntry: CTkEntry):
-    global item
     model = modelEntry.get()
     date = date.strftime("%d/%m/%y")
     try:
-        item.update_info(name, id, date, model)
+        item.updateInfo(name, id, date, model)
+        show_msg("הקובץ עודכן בהצלחה", error=False)
+    except PermissionError:
+        show_msg("הקובץ המתבקש נמצא בשימוש, אנא דאג לסגירתו", error=True)
+
+
+def submit_returned():
+    try:
+        item.setReturned()
         show_msg("הקובץ עודכן בהצלחה", error=False)
     except PermissionError:
         show_msg("הקובץ המתבקש נמצא בשימוש, אנא דאג לסגירתו", error=True)
@@ -74,7 +88,10 @@ background = "#EAEAEA"
 window = CTk()
 window.title("Injector")
 window.geometry("600x600")
-globalFont = CTkFont("arial", 15)
+generalFont = CTkFont("arial", 15)
+btnFont = CTkFont("arial", 17)
+infoFont = CTkFont("arial bold", 17)
+
 main_frame = CTkFrame(window, bg_color=background, fg_color=background)
 main_frame.pack()
 
@@ -92,18 +109,18 @@ serial_frame.grid(row=1, column=1, pady=5)
 
 serial_label = CTkLabel(serial_frame,
     text="  :מס' סריאלי ",
-    font=globalFont,
+    font=generalFont,
     bg_color=background
 )
 serial_label.grid(row=0, column=2)
 
-serial_input = CTkEntry(serial_frame, bg_color=background)
+serial_input = CTkEntry(serial_frame, bg_color=background, font=generalFont)
 serial_input.grid(row=0, column=1, padx=10)
 
-serial_sumbit = CTkButton(main_frame,
+serial_sumbit_btn = CTkButton(main_frame,
     text = "חפש",
     width = 10,
-    font = globalFont,
+    font = btnFont,
     bg_color = background,
     command = lambda: submit_serial(serial_input.get(),
                                     form_frame,
@@ -111,9 +128,12 @@ serial_sumbit = CTkButton(main_frame,
                                     existingModel_frame,
                                     existingModel_Name,
                                     prev_name,
-                                    prev_name_label)
+                                    prev_name_label,
+                                    info_submit_btn,
+                                    deviceReturn_frame,
+                                    deviceReturn_name)
 )
-serial_sumbit.grid(row=1, column=0, pady=5)
+serial_sumbit_btn.grid(row=1, column=0, pady=5)
 
 
 #   form
@@ -122,44 +142,43 @@ form_frame = CTkFrame(main_frame, fg_color=background)
 
 name_label = CTkLabel(form_frame,
     text="  :שם",
-    font=globalFont,
+    font=generalFont,
     bg_color=background
 )
 name_label.grid(row=0, column=3, pady=5)
 
-name_input = CTkEntry(form_frame, bg_color=background, justify = "right")
+name_input = CTkEntry(form_frame, bg_color=background, font=generalFont, justify = "right")
 name_input.grid(row=0, column=2, padx=10, pady=5)
 
-#previous name --------------------------
+#previous name
 prev_name_label = CTkLabel(form_frame,
     text=":זכאי קודם",
-    font=globalFont,
+    font=generalFont,
     bg_color=background
 )
 
-prev_name = CTkLabel(form_frame, bg_color=background, justify = "right")
+prev_name = CTkLabel(form_frame, bg_color=background, font=infoFont, justify = "right")
 
 #id
 id_label = CTkLabel(form_frame,
     text=":מס' זהות",
-    font=globalFont, 
+    font=generalFont, 
     bg_color=background
 )
 id_label.grid(row=1, column=3, pady=5)
 
-id_input = CTkEntry(form_frame, bg_color=background)
+id_input = CTkEntry(form_frame, bg_color=background, font=generalFont)
 id_input.grid(row=1, column=2, padx=10, pady=5)
 
 #date
 date_label = CTkLabel(form_frame,
     text=":מועד אספקה",
-    font=globalFont,
+    font=generalFont,
     bg_color=background
 )
 date_label.grid(row=3, column=3, pady=5)
 
-# date_entry = CTkEntry(form_frame, bg_color=background)
-date_input = DateEntry(form_frame, )
+date_input = DateEntry(form_frame)
 date_input.grid(row=3, column=2, padx=10, pady=5)
 
 #   model frames
@@ -167,27 +186,27 @@ date_input.grid(row=3, column=2, padx=10, pady=5)
 newModel_frame = CTkFrame(main_frame, fg_color=background)
 newModel_label = CTkLabel(newModel_frame,
     text="       :דגם      ",
-    font=globalFont,
+    font=generalFont,
     bg_color=background
 )
 newModel_label.grid(row=0, column=1)
 
-newModel_input = CTkEntry(newModel_frame, bg_color=background)
+newModel_input = CTkEntry(newModel_frame, bg_color=background, font=generalFont)
 newModel_input.grid(row=0, column=0, padx=10)
 
 #existing model
 existingModel_frame = CTkFrame(main_frame, fg_color=background)
 existingModel_label = CTkLabel(existingModel_frame,
     text="       :דגם      ",
-    font=globalFont,
+    font=generalFont,
     bg_color=background
 )
 existingModel_label.grid(row=0, column=1)
 
-existingModel_Name = CTkLabel(existingModel_frame, bg_color=background)
+existingModel_Name = CTkLabel(existingModel_frame, bg_color=background, font=infoFont)
 existingModel_Name.grid(row=0, column=0, padx=10)
 
-info_submit = CTkButton(main_frame, bg_color=background,
+info_submit_btn = CTkButton(main_frame, bg_color=background,
     text = "הוסף מידע",
     font = CTkFont("arial", 17),
     command = lambda: submit_info(name_input.get(),
@@ -196,6 +215,23 @@ info_submit = CTkButton(main_frame, bg_color=background,
                                   newModel_input)
 )
 
-msg_label = CTkLabel(main_frame, text_color="white", font=globalFont, corner_radius=5)
+# return
+deviceReturn_frame = CTkFrame(main_frame, fg_color=background)
+deviceReturn_label = CTkLabel(deviceReturn_frame, 
+                               bg_color=background,
+                               font = generalFont,
+                               text = " :המוצר לא הוחזר מזכאי קודם")
+deviceReturn_label.grid(row=0, column=2)
+deviceReturn_name = CTkLabel(deviceReturn_frame, bg_color=background, font=infoFont)
+deviceReturn_name.grid(row=0, column=1, padx=10)
+
+deviceReturn_btn = CTkButton(deviceReturn_frame, bg_color=background,
+    text = "סמן הוחזר",
+    font = btnFont,
+    command = lambda: submit_returned()
+)
+deviceReturn_btn.grid(row=0, column=0, padx=10)
+
+msg_label = CTkLabel(main_frame, text_color="white", font=generalFont, corner_radius=5)
 
 window.mainloop()

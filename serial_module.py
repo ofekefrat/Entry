@@ -1,15 +1,17 @@
 from openpyxl import load_workbook
 
-#TODO add "no model name" error
+#TODO add exceptions for each action, in case it fails
+    #TODO add "no model name" error
 #TODO put a flag in the end of the row to signify editing in progress
 #TODO check if there's a flag and throw error if so
+    # TEST: "returned" feature
     # TEST: fetchPrevName
     # TEST: work with every type of serial
     # TEST: make sure there's no additional cells after the first empty cell found!
     # TEST: serial number validation (insufficient digits, incorrect format...)
 
 class Item:
-    def __init__(self, serial):
+    def __init__(self, serial: str):
         self.serial = serial
         self.path = None
         self.wb = None
@@ -19,13 +21,14 @@ class Item:
         self.modelName = None
         self.new = None
         self.prevName = None
+        self.returned = None
 
         self.findWorkbook()
         if not isinstance(self.wb, FileNotFoundError):
             self.findSheet()
             if not isinstance(self.sheet, KeyError):
                 self.findRow()
-                self.findIsNew()
+                self.assertIsNew()
                 if self.new:
                     self.modelName = None
                     self.column = 2
@@ -33,6 +36,7 @@ class Item:
                     self.fetchModel()
                     self.findColumn()
                     self.fetchPrevName()
+                    self.assertIsReturned()
     
 
     def createPath(self):
@@ -68,7 +72,7 @@ class Item:
             self.row = currentRow
 
 
-    def findIsNew (self):
+    def assertIsNew (self):
         self.new = not self.not_last_cell(1)
 
 
@@ -78,18 +82,19 @@ class Item:
         while result is not False:
             column = self.find_next_empty_cell()
             result = self.not_last_cell(column)
-            
-        cellVal = self.sheet.cell(row=self.row, column=column-1).value
-        if cellVal != "הוחזר":
-            self.column = -1
-        else:
-            self.column = column
 
+        self.column = column
+
+    
+    def assertIsReturned(self):
+        cellVal = self.sheet.cell(row=self.row, column=self.column-1).value
+        self.returned = (cellVal == "הוחזר".strip())
+        
 
     def fetchModel(self):
         models = ["caneo", "domiflex", "exigo", "emineo", "cirrus", "marcus", "f3", "m1", "k300", "pt", "מדרגון", "eloflex", "adiflex"]
 
-        modelName = None
+        modelName = -1
         currentColumn=5
         cellVal1 = self.sheet.cell(row=self.row, column=currentColumn-1).value
         cellVal2 = self.sheet.cell(row=self.row, column=currentColumn).value
@@ -114,9 +119,10 @@ class Item:
         currentColumn = self.column
         for i in range(4, 8):
             cellVal = self.sheet.cell(self.row, currentColumn-i).value
-            if type(cellVal) is str and ("הוחזר" in cellVal or self.serial in cellVal):
+            if type(cellVal) is str and (cellVal == "הוחזר".strip() or cellVal == self.serial.strip()):
                 self.prevName = self.sheet.cell(self.row, currentColumn-i+1).value
-                continue
+                return
+        self.prevName = -1
                 
 
     def find_next_empty_cell(self):
@@ -137,29 +143,15 @@ class Item:
                 return False
 
 
-# def find_serial(serial):
-#     item = Item(serial)
+    def setReturned(self):
+        self.sheet.cell(self.row, self.column).value = "הוחזר"
+        self.wb.save(self.path)
+    
 
-#     item.getWorkbook()
-#     if not isinstance(item.wb, FileNotFoundError):
-#         item.getSheet()
-#         if not isinstance(item.sheet, KeyError):
-#             item.getRow()
-#             if item.isNew():
-#                 item.new = True
-#                 item.modelName = "None"
-#                 item.column = 2
-#             else:
-#                 item.new = False
-#                 item.getModelName()
-#                 item.getColumn()
-#     return item
-
-
-    def update_info(self, name, id, date, model=None):
+    def updateInfo(self, name, id, date, model=None):
         info = [name, id, model, date]
         for x in info:
             if x != "":
                 self.sheet.cell(self.row, self.column).value = x
                 self.column+=1
-        self.wb.save(self.createPath())
+        self.wb.save(self.path)
