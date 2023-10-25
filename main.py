@@ -1,7 +1,7 @@
-from serial_module import Item
-from tkcalendar import DateEntry
-from customtkinter import *
 import customtkinter as ctk
+from customtkinter import *
+from tkcalendar import DateEntry
+from serial_module import Item
 
 item = None
 

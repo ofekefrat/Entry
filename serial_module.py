@@ -1,8 +1,10 @@
 from openpyxl import load_workbook
 
-#TODO on createPath, findSheet, findRow: work with every type of serial
-#TODO fix fetchPrevName
-#TODO everything in getcolumn
+#TODO add "no model name" error
+#TODO put a flag in the end of the row to signify editing in progress
+#TODO check if there's a flag and throw error if so
+    # TEST: fetchPrevName
+    # TEST: work with every type of serial
     # TEST: make sure there's no additional cells after the first empty cell found!
     # TEST: serial number validation (insufficient digits, incorrect format...)
 
@@ -61,10 +63,9 @@ class Item:
             cellVal = self.sheet.cell(row=currentRow, column=1).value
 
         if cellVal != self.serial:
-            print("error: serial not found")
             self.row = -1
-        
-        self.row = currentRow
+        else:
+            self.row = currentRow
 
 
     def findIsNew (self):
@@ -72,9 +73,6 @@ class Item:
 
 
     def findColumn(self):
-        # put a flag in the end of the row to signify editing in progress
-        # check if there's a flag and throw error if so
-        
         column = self.find_next_empty_cell()
         result = self.not_last_cell(column)
         while result is not False:
@@ -84,8 +82,8 @@ class Item:
         cellVal = self.sheet.cell(row=self.row, column=column-1).value
         if cellVal != "הוחזר":
             self.column = -1
-
-        self.column = column
+        else:
+            self.column = column
 
 
     def fetchModel(self):
@@ -107,9 +105,9 @@ class Item:
                     modelName = cellVal2
                     continue
         if modelName is None:
-            print("model name not found!")
-
-        self.modelName = modelName
+            self.modelName = -1           
+        else:
+            self.modelName = modelName
         
 
     def fetchPrevName(self):
