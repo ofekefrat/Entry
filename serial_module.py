@@ -1,13 +1,7 @@
 from openpyxl import load_workbook
 from datetime import datetime
+
 #TODO add exceptions for each action, in case it fails
-#TODO put a flag in the end of the row to signify editing in progress
-#TODO check if there's a flag and throw error if so
-    # TEST: "returned" feature
-    # TEST: fetchPrevName
-    # TEST: work with every type of serial
-    # TEST: make sure there's no additional cells after the first empty cell found!
-    # TEST: serial number validation (insufficient digits, incorrect format...)
 
 class Item:
     def __init__(self, serial: str):
@@ -78,10 +72,10 @@ class Item:
 
 
     def findColumn(self):
-        column = self.find_next_empty_cell()
+        column = self.find_first_empty_cell()
         result = self.not_last_cell(column)
         while result is not False:
-            column = self.find_next_empty_cell()
+            column = self.find_first_empty_cell()
             result = self.not_last_cell(column)
 
         self.column = column
@@ -129,10 +123,10 @@ class Item:
             if type(cellVal) is str and (cellVal == "הוחזר".strip() or cellVal == self.serial.strip()):
                 self.prevName = self.sheet.cell(self.row, currentColumn-i+1).value
                 return
-        self.prevName = -1
+        self.prevName = "לא נמצא"
                 
 
-    def find_next_empty_cell(self):
+    def find_first_empty_cell(self):
         currentColumn=2
         cellVal = self.sheet.cell(row=self.row, column=currentColumn).value
         while cellVal is not None:
@@ -150,15 +144,26 @@ class Item:
                 return False
 
 
+    def checkUnexpectedEntry(self):
+        value = self.sheet.cell(self.row, self.column).value
+        return value is not None
+
+
     def setReturned(self):
+        if self.checkUnexpectedEntry():
+            return False
         self.sheet.cell(self.row, self.column).value = "הוחזר"
         self.wb.save(self.path)
-    
+        return True
+
 
     def updateInfo(self, name, id, date, model=None):
+        if self.checkUnexpectedEntry():
+            return False
         info = [name, id, model, date]
         for x in info:
             if x != "":
                 self.sheet.cell(self.row, self.column).value = x
                 self.column+=1
         self.wb.save(self.path)
+        return True

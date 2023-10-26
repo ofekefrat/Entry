@@ -1,90 +1,10 @@
 import customtkinter as ctk
-from customtkinter import *
 from tkcalendar import DateEntry
-from serial_module import Item
+from ui_module import *
+from customtkinter import *
 
-item = None
-
-def submit_serial(input,
-                  formFrame: CTkFrame,
-                  newModelFrame: CTkFrame,
-                  existingModelFrame: CTkFrame,
-                  existingModelName: CTkLabel,
-                  prevName: CTkLabel,
-                  prevNameLabel: CTkLabel,
-                  deviceBirthdayDate: CTkLabel,
-                  infoSubmitBtn: CTkButton,
-                  deviceReturnFrame: CTkFrame,
-                  deviceReturnName: CTkLabel
-                  ):
-    global item
-    item = None
-
-    msg_label.grid_forget()
-    existingModelFrame.grid_forget()
-    newModelFrame.grid_forget()
-    prevName.grid_forget()
-    prevNameLabel.grid_forget()
-    formFrame.grid_forget()
-    infoSubmitBtn.grid_forget()
-    deviceReturnFrame.grid_forget()
-
-
-    tempItem = Item(input)
-
-    if isinstance(tempItem.wb, FileNotFoundError) or isinstance(tempItem.sheet, KeyError):
-        show_msg("מספר סריאלי לא קיים", error=True)
-        return
-    
-    if tempItem.returned or tempItem.new:
-        form_frame.grid(row=2, column=1, pady=5)
-        infoSubmitBtn.grid(row=4, column=1, pady=5)
-
-    if tempItem.new:
-        newModelFrame.grid(row=3, column=1, pady=5)
-    else:
-        existingModelFrame.grid(row=3, column=1, pady=5) 
-        existingModelName.configure(text=tempItem.modelName)
-        deviceBirthdayDate.configure(text = tempItem.deviceBirthday)
-
-        if tempItem.returned:
-            prevNameLabel.grid(row=0, column=1, pady=5, padx=(0, 20))
-            prevName.grid(row=0, column=0, padx=10, pady=5)
-            prevName.configure(text=tempItem.prevName)
-        else:
-            deviceReturnFrame.grid(row=4, column=1, pady=5)
-            deviceReturnName.configure(text = tempItem.prevName)
-
-    item = tempItem
-
-
-def submit_info(name, id, date, modelEntry: CTkEntry):
-    model = modelEntry.get()
-    date = date.strftime("%d/%m/%y")
-    try:
-        item.updateInfo(name, id, date, model)
-        show_msg("הקובץ עודכן בהצלחה", error=False)
-    except PermissionError:
-        show_msg("הקובץ המתבקש נמצא בשימוש, אנא דאג לסגירתו", error=True)
-
-
-def submit_returned():
-    try:
-        item.setReturned()
-        show_msg("הקובץ עודכן בהצלחה", error=False)
-    except PermissionError:
-        show_msg("הקובץ המתבקש נמצא בשימוש, אנא דאג לסגירתו", error=True)
-
-def show_msg(description, error):
-    global msg_label
-    msg_label.configure(text=description)
-    if error:
-        msg_label.configure(bg_color="red")
-    else:
-        msg_label.configure(bg_color="green")
-    msg_label.grid(row=5, column=1)
-            
 ctk.set_appearance_mode("light")
+
 #window
 background = "#EAEAEA"
 window = CTk()
@@ -94,8 +14,14 @@ generalFont = CTkFont("arial", 15)
 btnFont = CTkFont("arial", 17)
 infoFont = CTkFont("arial bold", 17)
 
+
+#   content
 main_frame = CTkFrame(window, bg_color=background, fg_color=background)
 main_frame.pack()
+
+msg_label = CTkLabel(main_frame, text_color="white", font=generalFont, corner_radius=5)
+
+controller = Controller(msg_label)
 
 #title
 title = CTkLabel(main_frame,
@@ -114,18 +40,33 @@ serial_label = CTkLabel(serial_frame,
     font=generalFont,
     bg_color=background
 )
-serial_label.grid(row=0, column=2)
+serial_label.grid(row=0, column=3)
 
 serial_input = CTkEntry(serial_frame, bg_color=background, font=generalFont)
-serial_input.grid(row=0, column=1, padx=10)
+serial_input.grid(row=0, column=2, padx=10)
+
+serial_droplist = CTkOptionMenu(serial_frame, bg_color=background,
+                                fg_color="white",
+                                button_color="white",
+                                button_hover_color="gray",
+                                font=generalFont,
+                                text_color="black",
+                                anchor='e',
+                                width=20,
+                                values = ["2400-03-", "2400-24-", "N220", "N160", "N50", "N60"]
+)
+serial_droplist.grid(row=0, column=1)
 
 serial_sumbit_btn = CTkButton(main_frame,
-    text = "חפש",
+    text = "חיפוש",
     width = 10,
     font = btnFont,
     bg_color = background,
-    command = lambda: submit_serial(serial_input.get(),
+    command = lambda: controller.submit_serial(serial_droplist.get() + serial_input.get(),
                                     form_frame,
+                                    name_input,
+                                    id_input,
+                                    newModel_input,
                                     newModel_frame,
                                     existingModel_frame,
                                     existingModel_Name,
@@ -136,7 +77,7 @@ serial_sumbit_btn = CTkButton(main_frame,
                                     deviceReturn_frame,
                                     deviceReturn_name)
 )
-serial_sumbit_btn.grid(row=1, column=0, pady=5)
+serial_sumbit_btn.grid(row=1, column=0, padx=15)
 
 
 #   form
@@ -181,7 +122,7 @@ date_label = CTkLabel(form_frame,
 )
 date_label.grid(row=3, column=3, pady=5)
 
-date_input = DateEntry(form_frame)
+date_input = DateEntry(form_frame, date_pattern = "dd/mm/yy")
 date_input.grid(row=3, column=2, padx=10, pady=5)
 
 #   model frames
@@ -219,7 +160,7 @@ deviceBirthday_date.grid(row=1, column=0, padx=10)
 info_submit_btn = CTkButton(main_frame, bg_color=background,
     text = "הוסף מידע",
     font = CTkFont("arial", 17),
-    command = lambda: submit_info(name_input.get(),
+    command = lambda: controller.submit_info(name_input.get(),
                                   id_input.get(),
                                   date_input.get_date(),
                                   newModel_input)
@@ -238,10 +179,9 @@ deviceReturn_name.grid(row=0, column=1, padx=10)
 deviceReturn_btn = CTkButton(deviceReturn_frame, bg_color=background,
     text = "סמן הוחזר",
     font = btnFont,
-    command = lambda: submit_returned()
+    command = lambda: controller.submit_returned()
 )
 deviceReturn_btn.grid(row=0, column=0, padx=10)
 
-msg_label = CTkLabel(main_frame, text_color="white", font=generalFont, corner_radius=5)
 
 window.mainloop()
