@@ -1,28 +1,29 @@
 from customtkinter import *
-from serial_module import Item
+from serial import *
+
 
 class Controller:
     def __init__(self, msgLabel: CTkLabel):
         self.msgLabel = msgLabel
         self.item = None
 
-
-    def submit_serial(self,
-                    input,
-                    formFrame: CTkFrame,
-                    nameInput: CTkEntry,
-                    idInput: CTkEntry,
-                    newModelInput: CTkEntry,
-                    newModelFrame: CTkFrame,
-                    existingModelFrame: CTkFrame,
-                    existingModelName: CTkLabel,
-                    prevName: CTkLabel,
-                    prevNameLabel: CTkLabel,
-                    deviceBirthdayDate: CTkLabel,
-                    infoSubmitBtn: CTkButton,
-                    deviceReturnFrame: CTkFrame,
-                    deviceReturnName: CTkLabel):
-
+    def submit_serial(
+        self,
+        input,
+        formFrame: CTkFrame,
+        nameInput: CTkEntry,
+        idInput: CTkEntry,
+        newModelInput: CTkEntry,
+        newModelFrame: CTkFrame,
+        existingModelFrame: CTkFrame,
+        existingModelName: CTkLabel,
+        prevName: CTkLabel,
+        prevNameLabel: CTkLabel,
+        deviceBirthdayDate: CTkLabel,
+        infoSubmitBtn: CTkButton,
+        deviceReturnFrame: CTkFrame,
+        deviceReturnName: CTkLabel,
+    ):
         self.item = None
 
         self.msgLabel.grid_forget()
@@ -40,10 +41,11 @@ class Controller:
 
         tempItem = Item(input)
 
-        if isinstance(tempItem.wb, FileNotFoundError) \
-        or isinstance(tempItem.sheet, KeyError) \
-        or tempItem.row == -1:
-
+        if (
+            isinstance(tempItem.wb, FileNotFoundError)
+            or isinstance(tempItem.sheet, KeyError)
+            or tempItem.row == -1
+        ):
             self.show_msg("מספר סריאלי לא נמצא", error=True)
             return
 
@@ -54,9 +56,9 @@ class Controller:
         if tempItem.new:
             newModelFrame.grid(row=3, column=1, pady=5)
         else:
-            existingModelFrame.grid(row=3, column=1, pady=5) 
+            existingModelFrame.grid(row=3, column=1, pady=5)
             existingModelName.configure(text=tempItem.modelName)
-            deviceBirthdayDate.configure(text = tempItem.deviceBirthday)
+            deviceBirthdayDate.configure(text=tempItem.deviceBirthday)
 
             if tempItem.returned:
                 prevNameLabel.grid(row=0, column=1, pady=5, padx=(0, 20))
@@ -64,30 +66,35 @@ class Controller:
                 prevName.configure(text=tempItem.prevName)
             else:
                 deviceReturnFrame.grid(row=4, column=1, pady=5)
-                deviceReturnName.configure(text = tempItem.prevName)
-            
+                deviceReturnName.configure(text=tempItem.prevName)
+
             self.item = tempItem
 
-
     def submit_info(self, name, id, date, modelEntry: CTkEntry):
+        if self.item.is_duplicate(name):
+            self.show_msg("שם זהה ללקוח קודם", error=True)
+            return
         model = modelEntry.get()
         date = date.strftime("%d/%m/%y")
         try:
-            success = self.item.updateInfo(name, id, date, model)
+            success = self.item.update_info(name, id, date, model)
             if not success:
-                self.show_msg('השורה עודכנה ע"י משתמש אחר. אנא הקש "חיפוש" שנית', error=True)
+                self.show_msg(
+                    'השורה עודכנה ע"י משתמש אחר. אנא הקש "חיפוש" שנית', error=True
+                )
                 return
             else:
                 self.show_msg("הקובץ עודכן בהצלחה", error=False)
         except PermissionError:
             self.show_msg("הקובץ המתבקש נמצא בשימוש, אנא דאג לסגירתו", error=True)
 
-
     def submit_returned(self):
         try:
-            success = self.item.setReturned()
+            success = self.item.set_returned()
             if not success:
-                self.show_msg('השורה עודכנה ע"י משתמש אחר. אנא הקש "חיפוש" שנית', error=True)
+                self.show_msg(
+                    'השורה עודכנה ע"י משתמש אחר. אנא הקש "חיפוש" שנית', error=True
+                )
             else:
                 self.show_msg("הקובץ עודכן בהצלחה", error=False)
         except PermissionError:
@@ -100,7 +107,7 @@ class Controller:
         else:
             self.msgLabel.configure(bg_color="green")
         self.msgLabel.grid(row=5, column=1)
-            
+
 
 def clear_entry(widget: CTkEntry):
-    widget.delete(0, 'end')
+    widget.delete(0, "end")
