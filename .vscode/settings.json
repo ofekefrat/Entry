@@ -1,4 +1,6 @@
 {
     "livePreview.defaultPreviewPath": "/injector.html",
-    "editor.stickyScroll.enabled": true
+    "editor.stickyScroll.enabled": true,
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.autoImportCompletions": true
 }

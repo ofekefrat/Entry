@@ -2,10 +2,10 @@ import customtkinter as ctk
 from panels.panel import Panel
 from panels.serial_entry import SerialEntryPanel
 from panels.returned import ReturnedPanel
-from customtkinter import *
+from customtkinter import CTk, CTkButton, CTkFrame
 from config import *
 
-active_panel: Panel = None
+active_panel: Panel = None # type: ignore
 
 def start_panel(panel: Panel):
     global active_panel
@@ -33,7 +33,7 @@ background = window.cget("fg_color")
 home_btn = CTkButton(
     window,
     text="חזור לדף הראשי",
-    font=btn_font,
+    font=BUTTON_FONT,
     command=lambda: return_home()
 )
 
@@ -43,7 +43,7 @@ serial_entry_panel = SerialEntryPanel(window)
 serial_entry_btn = CTkButton(
     home_panel,
     text="סריאלי",
-    font=btn_font,
+    font=BUTTON_FONT,
     command=lambda: start_panel(serial_entry_panel)
 )
 serial_entry_btn.pack(pady=150)
@@ -52,10 +52,9 @@ returned_panel = ReturnedPanel(window)
 returned_btn = CTkButton(
     home_panel,
     text="החזרות",
-    font=btn_font,
+    font=BUTTON_FONT,
     command=lambda: start_panel(returned_panel)
 )
 returned_btn.pack()
-
 
 window.mainloop()
