@@ -1,3 +1,4 @@
 {
-    "livePreview.defaultPreviewPath": "/injector.html"
+    "livePreview.defaultPreviewPath": "/injector.html",
+    "editor.stickyScroll.enabled": true
 }

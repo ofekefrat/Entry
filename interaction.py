@@ -1,8 +1,9 @@
 from customtkinter import *
-from serial import *
+from excel_serial import *
 
+# DEPRECATED
 
-class Controller:
+class NewEntryController:
     def __init__(self, msgLabel: CTkLabel):
         self.msgLabel = msgLabel
         self.item = None
@@ -42,42 +43,39 @@ class Controller:
         tempItem = Item(input)
 
         if (
-            isinstance(tempItem.wb, FileNotFoundError)
+            isinstance(tempItem._wb, FileNotFoundError)
             or isinstance(tempItem.sheet, KeyError)
             or tempItem.row == -1
         ):
             self.show_msg("מספר סריאלי לא נמצא", error=True)
             return
 
-        if tempItem.returned or tempItem.new:
+        if tempItem.is_returned or tempItem.is_new:
             formFrame.grid(row=2, column=1, pady=5)
             infoSubmitBtn.grid(row=4, column=1, pady=5)
 
-        if tempItem.new:
+        if tempItem.is_new:
             newModelFrame.grid(row=3, column=1, pady=5)
         else:
             existingModelFrame.grid(row=3, column=1, pady=5)
-            existingModelName.configure(text=tempItem.modelName)
-            deviceBirthdayDate.configure(text=tempItem.deviceBirthday)
+            existingModelName.configure(text=tempItem.model_name)
+            deviceBirthdayDate.configure(text=tempItem.device_birthday)
 
-            if tempItem.returned:
+            if tempItem.is_returned:
                 prevNameLabel.grid(row=0, column=1, pady=5, padx=(0, 20))
                 prevName.grid(row=0, column=0, padx=10, pady=5)
-                prevName.configure(text=tempItem.prevName)
+                prevName.configure(text=tempItem.prev_name)
             else:
                 deviceReturnFrame.grid(row=4, column=1, pady=5)
-                deviceReturnName.configure(text=tempItem.prevName)
+                deviceReturnName.configure(text=tempItem.prev_name)
 
-            self.item = tempItem
+        self.item = tempItem
 
-    def submit_info(self, name, id, date, modelEntry: CTkEntry):
-        if self.item.is_duplicate(name):
-            self.show_msg("שם זהה ללקוח קודם", error=True)
-            return
+    def submit_info(self, name, id, date, modelEntry: CTkEntry, button: CTkButton):
         model = modelEntry.get()
         date = date.strftime("%d/%m/%y")
         try:
-            success = self.item.update_info(name, id, date, model)
+            success = self.item._update_info(name, id, date, model)
             if not success:
                 self.show_msg(
                     'השורה עודכנה ע"י משתמש אחר. אנא הקש "חיפוש" שנית', error=True
@@ -85,12 +83,13 @@ class Controller:
                 return
             else:
                 self.show_msg("הקובץ עודכן בהצלחה", error=False)
+                button.grid_forget()
         except PermissionError:
             self.show_msg("הקובץ המתבקש נמצא בשימוש, אנא דאג לסגירתו", error=True)
 
     def submit_returned(self):
         try:
-            success = self.item.set_returned()
+            success = self.item._set_returned()
             if not success:
                 self.show_msg(
                     'השורה עודכנה ע"י משתמש אחר. אנא הקש "חיפוש" שנית', error=True
@@ -111,3 +110,9 @@ class Controller:
 
 def clear_entry(widget: CTkEntry):
     widget.delete(0, "end")
+
+
+class ReturnedController:
+    def __init__(self, msgLabel: CTkLabel):
+        self.msgLabel = msgLabel
+        self.item = None
