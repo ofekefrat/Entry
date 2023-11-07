@@ -92,7 +92,7 @@ class DateBox(LabeledBox):
         self.date_input.grid(column=2, row=self.row, padx=10)
 
     def get(self):
-        return self.date_input.get_date().strftime("%d/%m/%y")
+        return self.date_input.get_date()
 
     # def clear(self): do this someday maybe
     #     self.date_input.configure()
@@ -216,7 +216,7 @@ class Panel:
     def stop(self):
         self.main_frame.pack_forget()
 
-    def show_msg(self, msg_text, is_error):
+    def show_msg(self, msg_text, is_error=True):
         self.msg_label.configure(text=msg_text)
         if is_error:
             self.msg_label.configure(bg_color="red")

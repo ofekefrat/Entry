@@ -1,7 +1,6 @@
 from typing import Optional
 from .panel import *
-from customtkinter import CTk, CTkFrame, CTkLabel, CTkEntry, CTkOptionMenu, CTkButton 
-from tkcalendar import DateEntry
+from customtkinter import CTk, CTkFrame, CTkButton 
 from excel_serial import Item
 from config import *
 
@@ -83,11 +82,11 @@ class SerialEntryPanel(Panel):
             or isinstance(temp_item.sheet, KeyError)
             or temp_item.row == -1
         ):
-            self.show_msg("מספר סריאלי לא נמצא", is_error=True)
+            self.show_msg(SERIAL_404)
             return
 
         if isinstance(temp_item.prev_name, AttributeError):
-            self.show_msg("נראה כי יש בעיה עם השורה המתבקשת. אנא בדקו אותה בקובץ הסריאלי", is_error=True)
+            self.show_msg(SERIAL_ROW_PROBLEM)
             return
 
         self.form_frame.grid(row=1, column=0, pady=25)
@@ -97,12 +96,12 @@ class SerialEntryPanel(Panel):
             self.info_submit_btn.grid(row=5, column=2, pady=5)
         else:
             self.model_name_info.set(
-                temp_item.model_name if type(temp_item.model_name) is str else "לא נמצא"
+                temp_item.model_name if type(temp_item.model_name) is str else NOT_FOUND
             )
             self.model_name_info.show()
 
             self.prev_name_info.set(
-                temp_item.prev_name if type(temp_item.prev_name) is str else "לא נמצא"
+                temp_item.prev_name if type(temp_item.prev_name) is str else NOT_FOUND
             )
             self.prev_name_info.show()
         
@@ -114,16 +113,14 @@ class SerialEntryPanel(Panel):
                 success = self.item.update_info(
                     self.name_input.get(),
                     self.id_input.get(),
-                    self.delivery_date.get(),
+                    self.delivery_date.get().strftime("%d/%m/%y"),
                     self.model_name_input.get()
                 )
                 if not success:
-                    self.show_msg(
-                        'השורה עודכנה ע"י משתמש אחר. אנא הקש "חיפוש" שנית', is_error=True
-                    )
+                    self.show_msg(FILE_UPDATED_UNEXPECTEDLY)
                     return
                 else:
-                    self.show_msg("הקובץ עודכן בהצלחה", is_error=False)
+                    self.show_msg(FILE_UPDATE_SUCCESS, is_error=False)
                     self.info_submit_btn.grid_forget()
             except PermissionError:
-                self.show_msg("הקובץ המתבקש נמצא בשימוש, אנא דאג לסגירתו", is_error=True)
+                self.show_msg(FILE_IN_USE)

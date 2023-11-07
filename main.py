@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from panels.panel import Panel
-from panels.serial_entry import SerialEntryPanel
-from panels.returned import ReturnedPanel
+from panels.serial_panel import SerialEntryPanel
+from panels.returned_panel import ReturnedPanel
 from customtkinter import CTk, CTkButton, CTkFrame
 from config import *
 
@@ -18,14 +18,14 @@ def return_home():
     active_panel.stop()
     home_panel.pack()
     home_btn.place_forget()
-    # CLEAR ALL DATA, ITEMS, ETC
+    #TODO CLEAR ALL DATA, ITEMS, ETC
 
 ctk.set_appearance_mode("light")
 
 # window
 window = CTk()
 window.title("Entry")
-window.geometry("600x600")
+window.geometry("600x700")
 background = window.cget("fg_color")
 
 

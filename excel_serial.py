@@ -2,6 +2,7 @@ from typing import Optional
 from openpyxl import load_workbook, Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from datetime import datetime
+from config import *
 
 # TODO implement "class method" construction
 # TODO add exceptions for each action, in case it fails
@@ -19,9 +20,9 @@ class Item:
         self.row: Optional[int] = None
         self.column: Optional[int] = None
         self.model_name: Optional[str] = None
-        self.issuing_date: datetime | str = "לא נמצא"
+        self.issuing_date: datetime | str = NOT_FOUND
         self.is_new: Optional[bool] = None
-        self.prev_name: str | AttributeError = "לא נמצא"
+        self.prev_name: str | AttributeError = NOT_FOUND
         self.is_returned: bool = False
 
         self._find_workbook()
@@ -148,7 +149,7 @@ class Item:
                 else:
                     break
 
-            self.model_name = "לא נמצא" if modelName is None else modelName.strip()
+            self.model_name = NOT_FOUND if modelName is None else modelName.strip()
 
     def _fetch_prev_name(self):
         if (
@@ -176,7 +177,7 @@ class Item:
                             return
                 else:
                     break
-            self.prev_name = "לא נמצא"
+            self.prev_name = NOT_FOUND
 
     def _check_unexpected_entry(self):
         if (

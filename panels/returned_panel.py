@@ -1,3 +1,5 @@
+from _pydatetime import date
+from excel_record import update_record
 from .panel import *
 from config import *
 from excel_serial import Item
@@ -8,9 +10,9 @@ class ReturnedPanel(Panel):
         super().__init__(root, title="דוח החזרות")
 
         #מספר סריאלי
-        serial_input = DropListSearchBox(
+        self.serial_input = DropListSearchBox(
             master=self.top_frame, row=1, column=0, label_text=":מספר סריאלי",
-            btn_command=lambda: self.submit_serial(serial_input.get()),
+            btn_command=lambda: self.submit_serial(self.serial_input.get()),
             value_list=SERIAL_BEGINNINGS
         )
 
@@ -60,12 +62,29 @@ class ReturnedPanel(Panel):
         self.initial_issuing_info = InfoBox(
             master=self.form_frame, row=8, column=0, label_text=":תאריך אספקה מקורי"
         )
-        
-        
+
+        self.info_submit_btn = CTkButton(
+            master=self.form_frame,
+            bg_color=self.background,
+            text="הוסף מידע",
+            font=BUTTON_FONT,
+            command=lambda: self.submit_info({
+                "name": self.name_info.get(),
+                "id": self.id_input.get(),
+                "department": self.department_input.get(),
+                "request" : self.request_number_input.get(),
+                "model": self.model_name_info.get(),
+                "serial": self.serial_input.get(),
+                "call_recieved": self.call_recieved_date.get(),
+                "collection_date": self.collection_date.get(),
+                "moh_nofitied_date": self.moh_notify_date.get(),
+                "initial_issuing_date": self.initial_issuing_info.get()
+            })
+        )
         
     def submit_serial(self, input):
         self.item = None
-
+        
         self.msg_label.grid_forget()
         self.name_info.clear()
         self.id_input.clear()
@@ -84,31 +103,42 @@ class ReturnedPanel(Panel):
             or isinstance(temp_item.sheet, KeyError)
             or temp_item.row == -1
         ):
-            self.show_msg("מספר סריאלי לא נמצא", is_error=True)
+            self.show_msg(SERIAL_404)
             return
 
         if isinstance(temp_item.prev_name, AttributeError):
-            self.show_msg(
-                "נראה כי יש בעיה עם השורה המתבקשת. אנא בדקו אותה בקובץ הסריאלי", is_error=True
-            )
+            self.show_msg(SERIAL_ROW_PROBLEM)
             return
 
         if temp_item.is_new:
-            self.show_msg(
-                "המוצר המבוקש טרם הונפק ולכן לא ייתכן כי הוחזר", is_error=True
-            )
+            self.show_msg(SERIAL_NEVER_ISSUED)
             return
 
         self.form_frame.grid(row=1, column=0, pady=25)
+        self.info_submit_btn.grid(row=9, column=2, pady=10)
 
         self.name_info.set(
-            temp_item.prev_name if type(temp_item.prev_name) is str else "לא נמצא"
+            temp_item.prev_name if type(temp_item.prev_name) is str else NOT_FOUND
         )
         self.model_name_info.set(
-            temp_item.model_name if type(temp_item.model_name) is str else "לא נמצא"
+            temp_item.model_name if type(temp_item.model_name) is str else NOT_FOUND
         )
         self.initial_issuing_info.set(
-            temp_item.issuing_date if type(temp_item.issuing_date) is str else "לא נמצא"
+            temp_item.issuing_date if type(temp_item.issuing_date) is str else NOT_FOUND
         )
 
         self.item = temp_item
+
+
+    def submit_info(self, info: dict[str, str | date]):
+        res = update_record(info)
+
+        if isinstance(res, FileNotFoundError):
+            self.show_msg(FILE_IN_USE)
+        elif isinstance(res, KeyError):
+            self.show_msg(MONTHLY_SHEET_404)
+        elif isinstance(res, PermissionError):
+            self.show_msg(FILE_IN_USE)
+        else:
+            self.show_msg(FILE_UPDATE_SUCCESS, is_error=False)
+            self.info_submit_btn.grid_forget()
