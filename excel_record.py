@@ -1,6 +1,6 @@
 from _pydatetime import date
-from openpyxl import Workbook, load_workbook
-from openpyxl.worksheet.worksheet import Worksheet
+from openpyxl import load_workbook
+from config import RECORD_PATH
 
 DATE_TO_SHEET_NAME = {
     1: "ינואר",
@@ -31,7 +31,7 @@ COLUMN_FOR_DATA = {
 }
 
 def update_record(info: dict[str, str | date]):
-    file_name = "דוח החזרות.xlsx"
+    file_name = RECORD_PATH
 
     try:    
         wb = load_workbook(file_name)

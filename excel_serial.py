@@ -1,3 +1,4 @@
+from re import match, sub
 from typing import Optional
 from openpyxl import load_workbook, Workbook
 from openpyxl.worksheet.worksheet import Worksheet
@@ -14,7 +15,7 @@ FIRST_POSSIBLE_EMPTY_COLUMN = 2
 class Item:
     def __init__(self, serial: str):
         self.serial = serial.strip()
-        self.path: str = "serial "
+        self.path: str = SERIAL_PATH
         self.wb: Optional[Workbook | FileNotFoundError] = None
         self.sheet: Optional[Worksheet | KeyError] = None
         self.row: Optional[int] = None
@@ -40,15 +41,16 @@ class Item:
                     self._fetch_prev_name()
                     self._assert_is_returned()
 
-    # def _create_path(self):
-    #     self.path += self.serial[0:-3] + "000.xlsx"
-
     def _find_workbook(self):
         self.path += self.serial[0:-3] + "000.xlsx"
         try:
             self.wb = load_workbook(self.path)
         except FileNotFoundError as e:
             self.wb = e
+
+    def _reload(self):
+        self.wb = load_workbook(self.path)
+        self._find_sheet()
 
     def _find_sheet(self):
         if isinstance(self.wb, Workbook):
@@ -111,7 +113,10 @@ class Item:
             and isinstance(self.column, int)
         ):
             cellVal = self.sheet.cell(row=self.row, column=self.column - 1).value
-            self.is_returned = cellVal == "הוחזר".strip()
+            if type(cellVal) is str:
+                self.is_returned = cellVal.strip() == "הוחזר" or cellVal.strip() == "בוטל" # type: ignore
+            else:
+                self.is_returned = False
 
     def _fetch_device_info(self):
         if isinstance(self.sheet, Worksheet) and isinstance(self.row, int):
@@ -145,25 +150,35 @@ class Item:
 
                             if isinstance(deviceBirthday, datetime):
                                 self.issuing_date = deviceBirthday.strftime("%d/%m/%y")
+                            elif type(deviceBirthday) is str:
+                                if match(r'^[0-3]?\d/(0|1)?\d/(20)?\d\d$', deviceBirthday):
+                                    self.issuing_date = deviceBirthday
+                                if match(r'^[0-3]?\d\.(0|1)?\d\.(20)?\d\d$', deviceBirthday):
+                                    self.issuing_date = sub(r'\.', r'/', deviceBirthday)
+                                else:
+                                    self.issuing_date = "לא תקין"
                             break
-                else:
-                    break
 
             self.model_name = NOT_FOUND if modelName is None else modelName.strip()
 
-    def _fetch_prev_name(self):
+    def _fetch_prev_name(self, sp_column : Optional[int] = None):
         if (
             isinstance(self.sheet, Worksheet)
             and isinstance(self.row, int)
             and isinstance(self.column, int)
         ):
-            currentColumn: int = self.column
+            currentColumn: int = self.column if sp_column is None else sp_column
+            cellVal = self.sheet.cell(self.row, currentColumn-1).value
+            canceled_flag = True if type(cellVal) is str and cellVal.strip() == "בוטל" else False
             for i in range(4, 8):
                 if currentColumn - i >= 1:
                     cellVal = self.sheet.cell(self.row, currentColumn - i).value
                     if type(cellVal) is str and (
-                        cellVal == "הוחזר".strip() or cellVal == self.serial.strip()
+                        cellVal.strip() == "הוחזר" or cellVal.strip() == "בוטל" or cellVal.strip() == self.serial.strip()
                     ):
+                        if canceled_flag:
+                            self._fetch_prev_name(currentColumn-i+1)
+                            return
                         try:
                             temp_name = self.sheet.cell(
                                 self.row, currentColumn - i + 1
@@ -185,15 +200,17 @@ class Item:
             and isinstance(self.row, int)
             and isinstance(self.column, int)
         ):
+            self._reload()
             value = self.sheet.cell(self.row, self.column).value
             return value is not None
 
-    def _set_returned(self):
+    def set_returned(self):
         if (
             isinstance(self.wb, Workbook)
             and isinstance(self.sheet, Worksheet)
             and isinstance(self.row, int)
             and isinstance(self.column, int)
+            and not self.is_returned
         ):
             if self._check_unexpected_entry():
                 return False

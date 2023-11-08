@@ -3,18 +3,32 @@ from customtkinter import CTk, CTkFrame, CTkLabel, CTkButton, CTkOptionMenu, CTk
 from config import *
 from typing import Callable, List
 
+class LabelColumnException(Exception):
+    def __init__(self) -> None:
+        super().__init__("label_column must be greater than or equal to 1")
+
+class SearchBoxColumnException(Exception):
+    def __init__(self) -> None:
+        super().__init__("label_column must be greater than or equal to 2 in a SearchBox")
+    
+class DroplistSearchBoxColumnException(Exception):
+    def __init__(self) -> None:
+        super().__init__("label_column must be greater than or equal to 3 in a DroplistSearchBox")
 
 class LabeledBox:
     """Parent class for labeled boxes"""
     def __init__(self,
                  master: CTk | CTkFrame,
-                 row,
-                 column,
-                 label_text: str
+                 label_text: str,
+                 row: int,
+                 label_column: int = 1
                  ):
         self.background = master.cget("fg_color")
         self.row = row
-        self.column = column
+        if label_column < 1:
+            raise LabelColumnException
+        self.label_column = label_column
+        self.element_column = label_column-1
         # self.frame = CTkFrame(master, fg_color=self.background)
 
         self.label = CTkLabel(
@@ -23,10 +37,10 @@ class LabeledBox:
             text = label_text,
             bg_color = self.background,
         )
-        self.label.grid(column=3, row=self.row, pady=5, padx=10)
+        self.label.grid(column=self.label_column, row=self.row, pady=5, padx=10)
     
     def show(self):
-        self.label.grid(column=3, row=self.row, pady=5, padx=10)
+        self.label.grid(column=self.label_column, row=self.row, pady=5, padx=10)
 
     def hide(self):
         self.label.grid_forget()
@@ -42,22 +56,22 @@ class InfoBox(LabeledBox):
     """Info box with a label next to it."""
     def __init__(self,
                  master: CTk | CTkFrame,
-                 row,
-                 column,
-                 label_text: str
+                 label_text: str,
+                 row: int,
+                 label_column: int = 1,
                  ):
-        super().__init__(master, row, column, label_text)
+        super().__init__(master, label_text, row, label_column)
         
         self.info = CTkLabel(
             master=master,
             font=INFO_FONT,
             fg_color=self.background
         )
-        self.info.grid(column=2, row=self.row, padx=10)
+        self.info.grid(column=self.element_column, row=self.row, padx=10)
 
     def show(self):
         super().show()
-        self.info.grid(column=2, row=self.row, pady=5, padx=10)
+        self.info.grid(column=self.element_column, row=self.row, pady=5, padx=10)
 
     def hide(self):
         super().hide()
@@ -77,11 +91,11 @@ class DateBox(LabeledBox):
     """Date selection/input with a label next to it"""
     def __init__(self,
                  master: CTk | CTkFrame,
-                 row,
-                 column,
-                 label_text: str
+                 label_text: str,
+                 row: int,
+                 label_column : int = 1,
                  ):
-        super().__init__(master, row, column, label_text)
+        super().__init__(master, label_text, row, label_column)
         
         self.date_input = DateEntry(
             master=master,
@@ -89,24 +103,29 @@ class DateBox(LabeledBox):
             font=DATE_FONT,
             justify="center"
         )
-        self.date_input.grid(column=2, row=self.row, padx=10)
+        self.date_input.grid(column=self.element_column, row=self.row, padx=10)
 
     def get(self):
         return self.date_input.get_date()
 
-    # def clear(self): do this someday maybe
-    #     self.date_input.configure()
+    def show(self):
+        super().show()
+        self.date_input.grid(column=self.element_column, row=self.row, padx=10)
+
+    def hide(self):
+        super().hide()
+        self.date_input.grid_forget()
 
 
 class TextBox(LabeledBox):
     """Text box with a label next to it"""
     def __init__(self,
                  master: CTk | CTkFrame,
-                 row,
-                 column,
-                 label_text: str
+                 label_text: str,
+                 row: int,
+                 label_column: int = 1,
                  ):
-        super().__init__(master, row, column, label_text)
+        super().__init__(master, label_text, row, label_column)
 
         self.input = CTkEntry(
             master=master,
@@ -114,11 +133,11 @@ class TextBox(LabeledBox):
             font=GENERAL_FONT,
             justify='right'
         )
-        self.input.grid(column=2, row=self.row, padx=10)
+        self.input.grid(column=self.element_column, row=self.row, padx=10)
 
     def show(self):
         super().show()
-        self.input.grid(column=2, row=self.row, padx=10)
+        self.input.grid(column=self.element_column, row=self.row, padx=10)
 
     def hide(self):
         super().hide()
@@ -135,12 +154,15 @@ class SearchBox(TextBox):
     """Search box"""
     def __init__(self,
                  master: CTk | CTkFrame,
-                 row,
-                 column,
                  label_text: str,
-                 btn_command: Callable
+                 row: int,
+                 btn_command: Callable,
+                 label_column : int = 2,
                  ):
-        super().__init__(master, row, column, label_text)
+        if label_column < 2: raise SearchBoxColumnException 
+        super().__init__(master=master, label_text=label_text, row=row, label_column=label_column)
+
+        self.btn_column = label_column-3 if type(self) is DropListSearchBox else label_column-2
         
         self.btn = CTkButton(
             master=master,
@@ -150,21 +172,30 @@ class SearchBox(TextBox):
             command=btn_command,
             width=10
         )
-        self.btn.grid(column=0, row=self.row, padx=10)
+        self.btn.grid(column=self.btn_column, row=self.row, padx=10)
 
+    def show(self):
+        super().show()
+        self.btn.grid(column=self.btn_column, row=self.row, padx=10)
+
+    def hide(self):
+        super().hide()
+        self.btn.grid_forget()
 
 class DropListSearchBox(SearchBox):
     """Search box with droplist"""
     def __init__(self,
                  master: CTk | CTkFrame,
-                 row,
-                 column,
                  label_text: str,
+                 row: int,
                  btn_command: Callable,
-                 value_list: List[str]
+                 value_list: List[str],
+                 label_column : int = 3,
                  ):
-        super().__init__(master, row, column, label_text, btn_command)
-        
+        if label_column < 3: raise DroplistSearchBoxColumnException
+        super().__init__(master=master, label_text=label_text, row=row, label_column=label_column, btn_command=btn_command)
+
+        self.droplist_column = label_column-2
         self.input.configure(justify="left")
         
         self.droplist = CTkOptionMenu(
@@ -179,11 +210,18 @@ class DropListSearchBox(SearchBox):
             width=20,
             values=value_list
         )
-        self.droplist.grid(column=1, row=self.row)
+        self.droplist.grid(column=self.droplist_column, row=self.row)
 
     def get(self) -> str:
         return self.droplist.get() + self.input.get()
 
+    def show(self):
+        super().show()
+        self.droplist.grid(column=self.droplist_column, row=self.row, padx=10)
+
+    def hide(self):
+        super().hide()
+        self.droplist.grid_forget()
 
 class Panel:
     """Parent class for panels"""
