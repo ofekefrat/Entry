@@ -162,3 +162,7 @@ cython_debug/
 
 #vscode
 .vscode
+דוח החזרות.xlsx
+serial 2400-03-001000.xlsx
+
+test.py
