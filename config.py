@@ -38,10 +38,8 @@ else: # as script
     iqlc_logo_path = app_path / 'assets' / 'iqlc_nl_bright.png'
 
 
-SERIAL_PATH = "\\\\iqlcDC\\documents$\\משרד\\סריאלי\\serial "
-RECORD_PATH = "\\\\iqlcDC\\documents$\\משרד\\החזרות\\דוח החזרות.xlsx"
-# SERIAL_PATH = "serial "
-# RECORD_PATH = "דוח החזרות.xlsx"
+SERIAL_PATH = "serial "
+RECORD_PATH = "דוח החזרות.xlsx"
 
 SERIAL_BEGINNINGS = ["2400-03-", "2400-24-", "N220", "N160", "N50", "N60"]
 MOH_DEPARTMENTS=[
