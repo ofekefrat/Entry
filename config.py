@@ -40,9 +40,13 @@ else: # as script
 
 SERIAL_PATH = "serial "
 RECORD_PATH = "דוח החזרות.xlsx"
+# SERIAL_PATH = "\\\\iqlcDC\\documents$\\משרד\\סריאלי\\serial "
+# RECORD_PATH = "\\\\iqlcDC\\documents$\\משרד\\החזרות\\דוח החזרות.xlsx"
 
+
+#--LISTS--
 SERIAL_BEGINNINGS = ["2400-03-", "2400-24-", "N220", "N160", "N50", "N60"]
-MOH_DEPARTMENTS=[
+DEPARTMENTS = [
     "חיפה",
     "עכו",
     "נצרת",
@@ -57,4 +61,52 @@ MOH_DEPARTMENTS=[
     "רחובות",
     "אשקלון",
     "תל אביב"
+]
+
+READABLE_MODELS = [
+    "CANEO",
+    "DOMIFLEX",
+    "EXIGO",
+    "EMINEO",
+    "CIRRUS",
+    "G5",
+    "MARCUS",
+    "F3",
+    "C300",
+    "C350",
+    "M1",
+    "K300",
+    "PT",
+    "מדרגון",
+    "ELOFLEX",
+    "ADIFLEX",
+]
+
+WRITEABLE_MODELS = [
+    "DOMIFLEX",
+    "CANEO B",
+    "CANEO E",
+    "EXIGO 20",
+    "EMINEO",
+    "CIRRUS G5",
+    "F3",
+    "M1",
+    "K300",
+    "PT ADAPT 160",
+    "PT ADAPT 130",
+    "ELOFLEX",
+    "ADIFLEX",
+    "CANEO 200",
+    "TAURON",
+]
+
+WIDTH_REQUIRED = [
+    "CANEO B",
+    "CANEO E",
+    "CANEO L",
+    "CANEO 200",
+    "EXIGO 10",
+    "EXIGO 20",
+    "EMINEO",
+    "TAURON",
 ]

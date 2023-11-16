@@ -49,7 +49,7 @@ def update_record(info: dict[str, str | date]):
             row = cell.row
             break
         
-    values = [
+    col_names = [
         "name",
         "id",
         "department",
@@ -62,11 +62,11 @@ def update_record(info: dict[str, str | date]):
         "initial_issuing_date"
     ]
 
-    for v in values:
-        if type(info[v]) is date:
-            sheet[f"{COLUMN_FOR_DATA[v]}{row}"] = info[v].strftime("%d/%m/%y") # type: ignore
+    for cn in col_names:
+        if type(info[cn]) is date:
+            sheet[f"{COLUMN_FOR_DATA[cn]}{row}"] = info[cn].strftime("%d/%m/%y") # type: ignore
         else:
-            sheet[f"{COLUMN_FOR_DATA[v]}{row}"] = info[v] # type: ignore
+            sheet[f"{COLUMN_FOR_DATA[cn]}{row}"] = info[cn] # type: ignore
 
     try:
         wb.save(file_name)

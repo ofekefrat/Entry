@@ -12,14 +12,15 @@ class SerialEntryPanel(Panel):
         self.item = Optional[Item]
 
         # מספר סריאלי
-        serial_input = DropListSearchBox(
+        self.serial_input = DropListSearchBox(
             master=self.top_frame, row=1, label_text=":מספר סריאלי",
 
-            btn_command=lambda: self.submit_serial(serial_input.get()),
+            btn_command=lambda: self.submit_serial(),
             value_list=SERIAL_BEGINNINGS,
         )
 
         self.form_frame = CTkFrame(self.main_frame, fg_color=FORM_FRAME_COLOR)
+        self.form_frame.grid_columnconfigure(0, weight=2)
 
         # שם הזכאי
         self.name_input = TextBox(
@@ -37,10 +38,16 @@ class SerialEntryPanel(Panel):
         )
         self.model_name_info.hide()
 
-        self.model_name_input = TextBox(
-            master=self.form_frame, row=2, label_text=":מכשיר"
+        self.model_name_input = DroplistTextBox(
+            master=self.form_frame, row=2, label_text=":מכשיר", values=WRITEABLE_MODELS,
         )
         self.model_name_input.hide()
+        self.width = CTkComboBox(
+            master=self.form_frame, width=60, font=GENERAL_FONT, values=["40", "42", "45", "48", "50"]
+        )
+        self.model_name_input.box.configure(command=lambda event=None: self.determine_show_width())
+        self.width.set("")
+
 
         # תאריך אספקה
         self.delivery_date = DateBox(
@@ -63,11 +70,11 @@ class SerialEntryPanel(Panel):
 
         # מוצר לא הוחזר
         self.not_returned_info = InfoBox(
-            master=self.top_frame, row=2, label_column=2, label_text=NOT_RETURNED_EXCEPTION
+            master=self.top_frame, row=2, label_column=3, label_text=NOT_RETURNED_EXCEPTION
         )
         self.not_returned_info.hide()
 
-    def submit_serial(self, input):
+    def submit_serial(self):
         self.item = None
 
         self.form_frame.grid_forget()
@@ -76,6 +83,8 @@ class SerialEntryPanel(Panel):
         self.model_name_input.hide()
         self.model_name_info.hide()
         self.not_returned_info.hide()
+        self.width.grid_forget()
+        self.width.set("")
 
         self.name_input.clear()
         self.id_input.clear()
@@ -84,7 +93,7 @@ class SerialEntryPanel(Panel):
         # self.delivery_date.clear()
         self.prev_name_info.clear()
 
-        temp_item = Item(input)
+        temp_item = Item(self.serial_input.get())
 
         if (
             isinstance(temp_item.wb, FileNotFoundError)
@@ -104,7 +113,7 @@ class SerialEntryPanel(Panel):
             return
 
         self.form_frame.grid(row=1, column=0, pady=25)
-        self.info_submit_btn.grid(row=5, column=0, pady=5)
+        self.info_submit_btn.grid(row=5, column=1, pady=5)
 
         if temp_item.is_new:
             self.model_name_input.show()
@@ -128,7 +137,7 @@ class SerialEntryPanel(Panel):
                     self.name_input.get(),
                     self.id_input.get(),
                     self.delivery_date.get().strftime("%d/%m/%y"),
-                    self.model_name_input.get(),
+                    f"{self.model_name_input.get()} {self.width.get()}",
                 )
                 if not success:
                     self.show_msg(FILE_UPDATED_UNEXPECTEDLY)
@@ -138,3 +147,10 @@ class SerialEntryPanel(Panel):
                     self.info_submit_btn.grid_forget()
             except PermissionError:
                 self.show_msg(SERIAL_FILE_IN_USE)
+
+    def determine_show_width(self):
+        if self.model_name_input.get() in WIDTH_REQUIRED:
+            self.width.grid(row=2, column=0)
+        else:
+            self.width.grid_forget()
+            self.width.set("")

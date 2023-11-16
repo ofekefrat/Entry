@@ -12,7 +12,7 @@ class ReturnedPanel(Panel):
         #מספר סריאלי
         self.serial_input = DropListSearchBox(
             master=self.top_frame, row=1, label_text=":מספר סריאלי",
-            btn_command=lambda: self.submit_serial(self.serial_input.get()),
+            btn_command=lambda: self.submit_serial(),
             value_list=SERIAL_BEGINNINGS
         )
 
@@ -30,7 +30,7 @@ class ReturnedPanel(Panel):
 
         #לשכה
         self.department_input = DroplistTextBox(
-            master=self.form_frame, row=2, label_text=":לשכה", values=MOH_DEPARTMENTS
+            master=self.form_frame, row=2, label_text=":לשכה", values=DEPARTMENTS
         )
 
         #מספר בקשה
@@ -94,11 +94,11 @@ class ReturnedPanel(Panel):
 
         #מוצר כבר הוחזר
         self.already_returned_info = InfoBox(
-            master=self.top_frame, row=2, label_column=2, label_text=ALREADY_RETURNED_EXCEPTION
+            master=self.top_frame, row=2, label_column=3, label_text=ALREADY_RETURNED_EXCEPTION
         )
         self.already_returned_info.hide()
         
-    def submit_serial(self, input):
+    def submit_serial(self):
         self.item = None
         
         self.already_returned_info.hide()
@@ -115,7 +115,7 @@ class ReturnedPanel(Panel):
         # self.moh_notify_date.clear()
         self.initial_issuing_info.clear()
 
-        temp_item = Item(input)
+        temp_item = Item(self.serial_input.get())
 
         if (
             isinstance(temp_item.wb, FileNotFoundError)
@@ -139,7 +139,7 @@ class ReturnedPanel(Panel):
             return
 
         self.form_frame.grid(row=1, column=0, pady=25)
-        self.info_submit_btn.grid(row=9, column=0, pady=10)
+        self.info_submit_btn.grid(row=9, column=1, pady=10)
 
         self.name_info.set(
             temp_item.prev_name if type(temp_item.prev_name) is str else NOT_FOUND

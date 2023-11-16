@@ -3,6 +3,10 @@ from customtkinter import CTk, CTkFrame, CTkLabel, CTkButton, CTkOptionMenu, CTk
 from config import *
 from typing import Callable, List
 
+ELEMENT_PADX = 10
+ELEMENT_PADY = 5
+DEFAULT_LABEL_COLUMN = 2
+
 class LabelColumnException(Exception):
     def __init__(self) -> None:
         super().__init__("label_column must be greater than or equal to 1")
@@ -21,7 +25,7 @@ class LabeledBox:
                  master: CTk | CTkFrame,
                  label_text: str,
                  row: int,
-                 label_column: int = 1
+                 label_column: int = DEFAULT_LABEL_COLUMN
                  ):
         self.background = master.cget("fg_color")
         self.row = row
@@ -37,11 +41,11 @@ class LabeledBox:
             text=label_text,
             bg_color=self.background,
         )
-        self.label.grid(column=self.label_column, row=self.row, pady=5, padx=10)
+        self.label.grid(column=self.label_column, row=self.row, pady=ELEMENT_PADY, padx=ELEMENT_PADX)
         self.stringvar = StringVar()
     
     def show(self):
-        self.label.grid(column=self.label_column, row=self.row, pady=5, padx=10)
+        self.label.grid(column=self.label_column, row=self.row, pady=ELEMENT_PADY, padx=ELEMENT_PADX)
 
     def hide(self):
         self.label.grid_forget()
@@ -61,7 +65,7 @@ class InfoBox(LabeledBox):
                  master: CTk | CTkFrame,
                  label_text: str,
                  row: int,
-                 label_column: int = 1,
+                 label_column: int = DEFAULT_LABEL_COLUMN,
                  ):
         super().__init__(master, label_text, row, label_column)
         
@@ -71,11 +75,11 @@ class InfoBox(LabeledBox):
             fg_color=self.background,
             textvariable=self.stringvar
         )
-        self.info.grid(column=self.element_column, row=self.row, padx=10)
+        self.info.grid(column=self.element_column, row=self.row, padx=ELEMENT_PADX)
 
     def show(self):
         super().show()
-        self.info.grid(column=self.element_column, row=self.row, pady=5, padx=10)
+        self.info.grid(column=self.element_column, row=self.row, pady=ELEMENT_PADY, padx=ELEMENT_PADX)
 
     def hide(self):
         super().hide()
@@ -99,7 +103,7 @@ class DateBox(LabeledBox):
                  master: CTk | CTkFrame,
                  label_text: str,
                  row: int,
-                 label_column : int = 1,
+                 label_column : int = DEFAULT_LABEL_COLUMN,
                  ):
         super().__init__(master, label_text, row, label_column)
         
@@ -109,14 +113,14 @@ class DateBox(LabeledBox):
             font=DATE_FONT,
             justify="center"
         )
-        self.date_input.grid(column=self.element_column, row=self.row, padx=10)
+        self.date_input.grid(column=self.element_column, row=self.row, padx=ELEMENT_PADX)
 
     def get(self):
         return self.date_input.get_date()
 
     def show(self):
         super().show()
-        self.date_input.grid(column=self.element_column, row=self.row, padx=10)
+        self.date_input.grid(column=self.element_column, row=self.row, padx=ELEMENT_PADX)
     
     def clear(self):
         print("nope")
@@ -132,7 +136,7 @@ class TextBox(LabeledBox):
                  master: CTk | CTkFrame,
                  label_text: str,
                  row: int,
-                 label_column: int = 1,
+                 label_column: int = DEFAULT_LABEL_COLUMN,
                  ):
         super().__init__(master, label_text, row, label_column)
 
@@ -143,11 +147,11 @@ class TextBox(LabeledBox):
             font=GENERAL_FONT,
             justify='right'
         )
-        self.input.grid(column=self.element_column, row=self.row, padx=10)
+        self.input.grid(column=self.element_column, row=self.row, padx=ELEMENT_PADX)
 
     def show(self):
         super().show()
-        self.input.grid(column=self.element_column, row=self.row, padx=10)
+        self.input.grid(column=self.element_column, row=self.row, padx=ELEMENT_PADX)
 
     def hide(self):
         super().hide()
@@ -166,7 +170,7 @@ class DroplistTextBox(LabeledBox):
                  label_text: str,
                  row: int,
                  values: List[str],
-                 label_column: int = 1,
+                 label_column: int = DEFAULT_LABEL_COLUMN,
                  ):
         super().__init__(master=master, label_text=label_text, row=row, label_column=label_column)
         
@@ -177,13 +181,13 @@ class DroplistTextBox(LabeledBox):
             bg_color=self.background,
             font=GENERAL_FONT,
             dropdown_font=GENERAL_FONT,
-            justify='right'    
+            justify='right'
         )
-        self.box.grid(column=self.element_column, row=self.row, padx=10)
+        self.box.grid(column=self.element_column, row=self.row, padx=ELEMENT_PADX)
 
     def show(self):
         super().show()
-        self.box.grid(column=self.element_column, row=self.row, padx=10)
+        self.box.grid(column=self.element_column, row=self.row, padx=ELEMENT_PADX)
 
     def hide(self):
         super().hide()
@@ -197,7 +201,7 @@ class SearchBox(TextBox):
                  label_text: str,
                  row: int,
                  btn_command: Callable,
-                 label_column: int = 2,
+                 label_column: int = DEFAULT_LABEL_COLUMN+1,
                  ):
         if label_column < 2: raise SearchBoxColumnException 
         super().__init__(master=master, label_text=label_text, row=row, label_column=label_column)
@@ -208,15 +212,15 @@ class SearchBox(TextBox):
             master=master,
             text="חפש",
             bg_color=self.background,
-            font=GENERAL_FONT,
+            font=BUTTON_FONT,
             command=btn_command,
             width=10
         )
-        self.btn.grid(column=self.btn_column, row=self.row, padx=10)
+        self.btn.grid(column=self.btn_column, row=self.row, padx=ELEMENT_PADX)
 
     def show(self):
         super().show()
-        self.btn.grid(column=self.btn_column, row=self.row, padx=10)
+        self.btn.grid(column=self.btn_column, row=self.row, padx=ELEMENT_PADX)
 
     def hide(self):
         super().hide()
@@ -230,7 +234,7 @@ class DropListSearchBox(SearchBox):
                  row: int,
                  btn_command: Callable,
                  value_list: List[str],
-                 label_column : int = 3,
+                 label_column : int = DEFAULT_LABEL_COLUMN+2,
                  ):
         if label_column < 3: raise DroplistSearchBoxColumnException
         super().__init__(master=master, label_text=label_text, row=row, label_column=label_column, btn_command=btn_command)
@@ -256,7 +260,7 @@ class DropListSearchBox(SearchBox):
 
     def show(self):
         super().show()
-        self.droplist.grid(column=self.droplist_column, row=self.row, padx=10)
+        self.droplist.grid(column=self.droplist_column, row=self.row, padx=ELEMENT_PADX)
 
     def hide(self):
         super().hide()
@@ -268,6 +272,7 @@ class Panel:
                  root: CTk | CTkFrame,
                  title: str
                  ):
+        self.serial_input: DropListSearchBox
         self.root = root
         self.background = root.cget("fg_color")
         self.main_frame = CTkFrame(root, bg_color=self.background, fg_color=self.background)
@@ -279,16 +284,18 @@ class Panel:
         )
 
         self.title = CTkLabel(
-            self.top_frame,
-            text=title,
+            master=self.top_frame, text=title,
             font=CTkFont("arial", 23, underline=True),
             bg_color=self.background
         )
-        self.title.grid(row=0, column=2, pady=30)
+        self.title.grid(row=0, column=3, pady=30)
+
+        self.main_frame.bind()
 
     
     def start(self):
         self.main_frame.grid(column=0, row=1)
+        self.serial_input.input.focus_set()
 
     def stop(self):
         self.main_frame.grid_forget()
@@ -300,4 +307,10 @@ class Panel:
         else:
             self.msg_label.configure(bg_color="green")
         self.msg_label.grid(row=10, column=0)
-        
+
+    def submit_serial(self):
+        print("panel")
+        pass
+
+    def submit_info(self):
+        pass

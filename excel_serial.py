@@ -64,7 +64,7 @@ class Item:
     def _find_row(self):
         if isinstance(self.sheet, Worksheet):
             cellVal = self.sheet.cell(row=1, column=1).value
-            currentRow = 0
+            currentRow = 1
             while currentRow < 100 and cellVal != self.serial:
                 currentRow += 1
                 cellVal = self.sheet.cell(row=currentRow, column=1).value
@@ -80,6 +80,7 @@ class Item:
     def _find_column(self):
         column = self._find_first_empty_cell(FIRST_POSSIBLE_EMPTY_COLUMN)
         result = self._not_last_cell(column)
+
         while result is not False:
             column = self._find_first_empty_cell(result)
             result = self._not_last_cell(column)
@@ -121,30 +122,15 @@ class Item:
 
     def _fetch_device_info(self):
         if isinstance(self.sheet, Worksheet) and isinstance(self.row, int):
-            models = [
-                "caneo",
-                "domiflex",
-                "exigo",
-                "emineo",
-                "cirrus",
-                "marcus",
-                "f3",
-                "m1",
-                "k300",
-                "pt",
-                "מדרגון",
-                "eloflex",
-                "adiflex",
-            ]
 
-            modelName = None
+            model_name = None
 
             for i in range(4, 7):
                 cell = self.sheet.cell(row=self.row, column=i).value
-                if modelName is None and type(cell) is str:
-                    for x in models:
-                        if x in cell.lower():
-                            modelName = cell
+                if model_name is None and type(cell) is str:
+                    for x in READABLE_MODELS:
+                        if x in cell.upper():
+                            model_name = cell
                             device_bd = self.sheet.cell(
                                 row=self.row, column=i + 1
                             ).value
@@ -166,7 +152,7 @@ class Item:
                                     self.issuing_date = "לא תקין"
                             break
 
-            self.model_name = NOT_FOUND if modelName is None else modelName.strip()
+            self.model_name = NOT_FOUND if model_name is None else model_name.strip()
 
     def _fetch_prev_name(self, sp_column : Optional[int] = None):
         if (
