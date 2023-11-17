@@ -10,6 +10,13 @@ from config import *
 
 active_panel: Optional[Panel] = None
 
+def handle_panel_shortcut(panel: Panel):
+    global active_panel
+    if active_panel is not None and active_panel != panel:
+        stop_active_panel()
+        start_panel(panel)
+    if active_panel != panel:
+        start_panel(panel)
 
 def handle_enter_key():
     # print(self.main_frame.focus_get())
@@ -28,13 +35,17 @@ def start_panel(panel: Panel):
     active_panel = panel
     active_panel.start()
     home_btn.place(relx=0.75, rely=0.9, bordermode="inside")
-    
-def return_home():
-    #TODO CLEAR ALL DATA, ITEMS, ETC
+
+def stop_active_panel():
     global active_panel
     if active_panel is not None:
         active_panel.stop()
     active_panel = None
+    
+def return_home():
+    #TODO CLEAR ALL DATA, ITEMS, ETC
+    global active_panel
+    stop_active_panel()
     home_panel.grid(column=0, row=1)
     home_btn.place_forget()
 
@@ -87,11 +98,18 @@ returned_btn = CTkButton( fg_color=BUTTON_COLOR,
 returned_btn.pack()
 
 #binds
-# window.bind('<Control-1>', lambda event=None: start_panel(serial_entry_panel))
-# window.bind('<Control-2>', lambda event=None: start_panel(returned_panel))
-window.bind('<Control-Q>', lambda event=None: return_home())
-window.bind('<Return>', lambda event=None: handle_enter_key())
-window.bind('<Control-S>', lambda event=None: handle_save_sequence())
-window.bind('<Control-Return>', lambda event=None: handle_save_sequence())
+window.bind('<Control-Key-1>', lambda event=None: handle_panel_shortcut(serial_entry_panel)) # go to serial
+window.bind('<Control-Shift-Key-1>', lambda event=None: handle_panel_shortcut(serial_entry_panel))
+
+window.bind('<Control-Key-2>', lambda event=None: handle_panel_shortcut(returned_panel)) # go to returned
+window.bind('<Control-Shift-Key-2>', lambda event=None: handle_panel_shortcut(returned_panel))
+
+window.bind('<Control-Q>', lambda event=None: return_home()) # back to home page
+
+window.bind('<Return>', lambda event=None: handle_enter_key()) # search
+window.bind('<Control-Shift-Return>', lambda event=None: handle_enter_key())
+
+window.bind('<Control-S>', lambda event=None: handle_save_sequence()) # save
+window.bind('<Control-Return>', lambda event=None: handle_save_sequence()) # 
 
 window.mainloop()
