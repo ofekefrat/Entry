@@ -45,7 +45,7 @@ class SerialEntryPanel(Panel):
         self.width = CTkComboBox(
             master=self.form_frame, width=60, font=GENERAL_FONT, values=["40", "42", "45", "48", "50"]
         )
-        self.model_name_input.box.configure(command=lambda event=None: self.determine_show_width())
+        self.model_name_input.box.configure(command=lambda event=None: self._determine_show_width())
         self.width.set("")
 
 
@@ -131,13 +131,17 @@ class SerialEntryPanel(Panel):
         self.item = temp_item
 
     def submit_info(self):
+        if self._any_field_is_empty():
+            self.show_msg(EMPTY_FIELD_EXCEPTION)
+            return
+        
         if isinstance(self.item, Item):
             try:
                 success = self.item.update_info(
                     self.name_input.get(),
                     self.id_input.get(),
                     self.delivery_date.get().strftime("%d/%m/%y"),
-                    f"{self.model_name_input.get()} {self.width.get()}",
+                    f"{self.model_name_input.get()} {self.width.get()}" if self.item.is_new else "",
                 )
                 if not success:
                     self.show_msg(FILE_UPDATED_UNEXPECTEDLY)
@@ -148,9 +152,17 @@ class SerialEntryPanel(Panel):
             except PermissionError:
                 self.show_msg(SERIAL_FILE_IN_USE)
 
-    def determine_show_width(self):
+    def _determine_show_width(self):
         if self.model_name_input.get() in WIDTH_REQUIRED:
             self.width.grid(row=2, column=0)
         else:
             self.width.grid_forget()
             self.width.set("")
+
+    def _any_field_is_empty(self):
+        empty_var = StringVar()
+        res = self.name_input.get() == empty_var.get()
+        res += self.id_input.get() == empty_var.get()
+        res += self.model_name_input.get() == empty_var.get() and self.item.is_new # type: ignore
+        res += self.width.get() == empty_var.get() and self.model_name_input.get() in WIDTH_REQUIRED
+        return res

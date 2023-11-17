@@ -19,14 +19,12 @@ def handle_panel_shortcut(panel: Panel):
         start_panel(panel)
 
 def handle_enter_key():
-    # print(self.main_frame.focus_get())
-    # print(self.serial_input.input._entry)
     if active_panel is not None:
         if active_panel.main_frame.focus_get() == active_panel.serial_input.input._entry:
             active_panel.submit_serial()
 
 def handle_save_sequence():
-    if active_panel is not None:
+    if active_panel is not None and type(active_panel) is SerialEntryPanel:
         active_panel.submit_info()
 
 def start_panel(panel: Panel):

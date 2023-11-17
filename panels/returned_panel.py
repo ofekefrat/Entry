@@ -155,6 +155,10 @@ class ReturnedPanel(Panel):
 
 
     def submit_info(self, info: dict[str, str | date]):
+        if self._any_field_is_empty(info):
+            self.show_msg(EMPTY_FIELD_EXCEPTION)
+            return
+
         if type(self.item) is Item and not self.item.get_serial_file_permission():
             self.show_msg(SERIAL_FILE_IN_USE)
             return
@@ -186,5 +190,13 @@ class ReturnedPanel(Panel):
                 self.show_msg(SERIAL_FILE_IN_USE)                
         else: 
             print("item type error")
+
+    def _any_field_is_empty(self, info: dict):
+        empty_var = StringVar()
+        for x in ["id", "request", "department", "serial"]:
+            if info[x] == empty_var.get():
+                return True
+        
+        return False
 
         

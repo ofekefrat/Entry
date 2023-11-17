@@ -23,7 +23,7 @@ class Item:
         self.column: Optional[int] = None
         self.model_name: Optional[str] = None
         self.issuing_date: datetime | str = NOT_FOUND
-        self.is_new: Optional[bool] = None
+        self.is_new: bool = True
         self.prev_name: str | AttributeError = NOT_FOUND
         self.is_returned: bool = False
 

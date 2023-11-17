@@ -17,6 +17,8 @@ NOT_FOUND = "לא נמצא"
 RECORD_FILE_404 = "קובץ דוחות לא נמצא"
 MONTHLY_SHEET_404 = "דוח חודשי לא נמצא"
 ALREADY_RETURNED_EXCEPTION = ":המוצר כבר הוחזר מלקוח קודם"
+ROW_NOT_FOUND = "שורה לא נמצאה בגיליון"
+EMPTY_FIELD_EXCEPTION = "נא למלא את כל השדות"
 
 SERIAL_404 = "מספר סריאלי לא נמצא"
 SERIAL_ROW_PROBLEM = "נראה כי יש בעיה עם השורה המתבקשת. אנא בדקו אותה בקובץ הסריאלי"
