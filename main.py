@@ -7,6 +7,8 @@ from customtkinter import CTk, CTkButton, CTkFrame, CTkImage, CTkLabel
 from PIL import Image
 from config import *
 
+PANEL_BUTTON_WIDTH = 250
+PANEL_BUTTON_HEIGHT = 40
 
 active_panel: Optional[Panel] = None
 
@@ -77,23 +79,52 @@ home_panel = CTkFrame(main_frame, bg_color=background, fg_color=background)
 home_panel.grid(column=0, row=1)
 serial_entry_panel = SerialEntryPanel(main_frame)
 
-
 serial_btn = CTkButton( fg_color=BUTTON_COLOR,
     master=home_panel,
-    text="סריאלי (1)",
+    text="סריאלי",
     font=BUTTON_FONT,
-    command=lambda: start_panel(serial_entry_panel)
+    command=lambda: start_panel(serial_entry_panel),
+    width=PANEL_BUTTON_WIDTH,
+    height=PANEL_BUTTON_HEIGHT
 )
-serial_btn.pack(pady=150)
+serial_btn.pack(pady=60)
 
 returned_panel = ReturnedPanel(main_frame)
 returned_btn = CTkButton( fg_color=BUTTON_COLOR,
     master=home_panel,
-    text="החזרות (2)",
+    text="החזרות",
     font=BUTTON_FONT,
-    command=lambda: start_panel(returned_panel)
+    command=lambda: start_panel(returned_panel),
+    width=PANEL_BUTTON_WIDTH,
+    height=PANEL_BUTTON_HEIGHT
 )
 returned_btn.pack()
+
+key_binds = """               
+קיצורי דרך
+
+
+Enter  :חפש
+
+Ctrl+1  :למסך סריאלי
+
+Ctrl+2  :למסך החזרות
+
+Ctrl+Shift+Q  :למסך הראשי
+
+Ctrl+Shift+S  /  Ctrl+Enter  :עדכון מידע
+"""
+
+shortcuts = CTkLabel(
+    master=home_panel,
+    font=GENERAL_FONT,
+    text=key_binds,
+    justify="right",
+    corner_radius=80,
+    width=PANEL_BUTTON_WIDTH+20,
+    bg_color=FORM_FRAME_COLOR
+)
+shortcuts.pack(pady=100)
 
 #binds
 window.bind('<Control-Key-1>', lambda event=None: handle_panel_shortcut(serial_entry_panel)) # go to serial
