@@ -34,8 +34,8 @@ class Item:
         except (FileNotFoundError, KeyError) as e:
             raise e
 
-        self.row: int = self._resolve_row()
-        self.is_new: bool = self._resolve_is_new()
+        self.row = self._resolve_row()
+        self.is_new = self._resolve_is_new()
         if self.is_new:
             self.model_name = ""
             self.column = FIRST_POSSIBLE_EMPTY_COLUMN
